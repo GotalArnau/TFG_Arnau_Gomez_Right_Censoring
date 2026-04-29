@@ -110,11 +110,11 @@ calc_power_plus("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/We
 calc_power_plus("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Lognormal_RandomCensoring", 
                 alpha = 0.1, h0 = "weibull", n = 1000)
 
-calc_power_plus("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Lognormal_RandomCensoring", 
-                alpha = 0.1, h0 = "logistic", n = 1000)
-
 calc_power_plus("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Lognormal_RandomCensoring",
                 alpha = 0.1, h0 = "lognormal", n = 1000)
+
+calc_power_plus("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Lognormal_RandomCensoring", 
+                alpha = 0.1, h0 = "logistic", n = 1000)
 
 
 
