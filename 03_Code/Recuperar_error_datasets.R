@@ -1,4 +1,3 @@
-
 calc_tests_plus <- function(folder, alpha = 0.1, h0, n){
   library(GofCens)
   library(epitools)
@@ -16,7 +15,7 @@ calc_tests_plus <- function(folder, alpha = 0.1, h0, n){
   )
   
   
-  files <- list.files(folder, pattern = "\\.RData$", full.names = TRUE)
+  files <- list.files(folder, pattern = "Censoring_(0\\.7|1)_.*\\.RData$", full.names = TRUE)
   
   for(file in files){ #---------------------------------------OJO--------------------------------------
     

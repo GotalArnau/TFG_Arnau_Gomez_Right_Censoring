@@ -48,13 +48,16 @@ calculate_censoring_avg <- function(folder) {
   output_file <- paste0(folder, "/AVG_censoring_13march2026.csv")
   
   # Write the results data frame to a CSV file
-  write.csv(results_df, file = output_file, row.names = FALSE)
+  write.csv2(results_df, file = output_file, row.names = FALSE)
 }
 
 ###weibull data
 calculate_censoring_avg("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Weibull_AdminCensoring")
 
-#we should compute also the % of censoring on avg for the random censoring 
+calculate_censoring_avg("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Weibull_RandomCensoring")
 
 ###lognormal data
 calculate_censoring_avg("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Lognormal_AdminCensoring")
+
+calculate_censoring_avg("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Lognormal_RandomCensoring")
+

@@ -59,8 +59,9 @@ Calc_Skew <- function(times, cens, plot = TRUE, quantiles = c(0.25, 0.5, 0.75)){
 }
 
 
+
 #-------------------------------------------------------------------------------
-# Symmetric Random Censoring
+# Symmetric Random Censoring Example
 #-------------------------------------------------------------------------------
 
 set.seed(28657)
@@ -96,12 +97,13 @@ time_q3_obs <- ifelse(length(ind3)==0, NA, datcens_fit$time[ind3])
 
 as.numeric((q[1] - 2 * q[2] + q[3]) / (q[3] - q[1]))
 
+Calc_Skew(times = datcens$times, cens = datcens$cens)
 
 
 
 
 #-------------------------------------------------------------------------------
-# Symmetric Administrative Censoring
+# Symmetric Administrative Censoring Example
 #-------------------------------------------------------------------------------
 
 set.seed(28657)
