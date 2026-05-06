@@ -1,0 +1,13 @@
+Skewness;Censoring_percentage;Distribution;Value
+Symmetric;60%;Weibull;1/18.5
+Symmetric;60%;Lognormal;1/7.99
+Symmetric;30%;Weibull;1/48.9
+Symmetric;30%;Lognormal;1/20.5
+Asymmetric;60%;Weibull;1/15.95
+Asymmetric;60%;Lognormal;1/8.01
+Asymmetric;30%;Weibull;1/46.25
+Asymmetric;30%;Lognormal;1/21.55
+Extremely Asymmetric;60%;Weibull;1/13.2
+Extremely Asymmetric;60%;Lognormal;1/7.25
+Extremely Asymmetric;30%;Weibull;1/45.9
+Extremely Asymmetric;30%;Lognormal;1/32.5

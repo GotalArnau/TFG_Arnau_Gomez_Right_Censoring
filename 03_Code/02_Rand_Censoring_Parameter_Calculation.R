@@ -388,9 +388,14 @@ table_60_L
 table_30_W
 table_30_L
 
+(Parameters <- data.frame(Skewness =  rep(c("Symmetric", "Asymmetric", "Extremely Asymmetric"), each = 4),
+           'Censoring_percentage' = rep(c('60%','30%'), each = 2), 
+           Distribution = rep(c('Weibull', 'Lognormal'), n = 6), 
+           Value = c("1/18.5", "1/7.99", "1/48.9", "1/20.5", "1/15.95", "1/8.01", 
+                     "1/46.25", "1/21.55", "1/13.2", "1/7.25", "1/45.9", "1/32.5")))
 
-
-
+write.csv2(Parameters, file = "C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Rand_Censoring_paraemters.csv",
+     row.names = FALSE)
 
 
 
