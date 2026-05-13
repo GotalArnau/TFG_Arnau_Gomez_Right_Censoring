@@ -32,7 +32,7 @@ calc_tests_plus2 <- function(folder, alpha = 0.1, h0, n){
     all3 <- NULL
     SEC <- NULL
     
-    for (i in 1:n) {
+    for (i in 1:n){
       print(i)
       km <- NULL
       SEC <- NULL
@@ -40,22 +40,41 @@ calc_tests_plus2 <- function(folder, alpha = 0.1, h0, n){
       times <- dados$times
       cens <- dados$cens
       
-      # Calculate p-values for each test
-      all3 <- try(gofcens(times, cens, distr = h0))
+      pvalsCvM[i]      <- NA
+      pvalsKS[i]       <- NA
+      pvalsAD[i]       <- NA
+      pvalsKS_noboot[i] <- NA
+      km_min[i]        <- NA
+      t_max[i]         <- NA
+      SEC_min[i]       <- NA
       
-      pvalsCvM[i] <- try(all3$pval[2])
-      pvalsKS[i] <- try(all3$pval[1])
-      pvalsAD[i] <- try(all3$pval[3])
-      SEC <- try(KScens(times, cens, distr = h0, boot = FALSE))
-      pvalsKS_noboot[i] <- SEC$Test[[2]]
-      km <- survfit(Surv(times, cens) ~ 1)
-      km_min[i] <- tail(km$surv, 1)
-      t_max[i] <- tail(km$time, 1)
       
-      SEC_min[i] <- 1 - switch(h0,
-                               weibull = pweibull(q = t_max[i], shape = SEC$Estimates[[1]], scale = SEC$Estimates[[2]]),
-                               lognormal = plnorm(q = t_max[i], meanlog = SEC$Estimates[[1]], sdlog = SEC$Estimates[[2]]),
-                               logistic = plogis(q = t_max[i], location = SEC$Estimates[[1]], scale = SEC$Estimates[[2]]))
+      all3 <- tryCatch(gofcens(times, cens, distr = h0), error = function(e) NA)
+      
+      if (!all(is.na(all3))){
+        pvalsCvM[i] <- all3$pval[2]
+        pvalsKS[i]  <- all3$pval[1]
+        pvalsAD[i]  <- all3$pval[3]
+      }
+      
+      SEC <- tryCatch(KScens(times, cens, distr = h0, boot = FALSE), error = function(e) NA)
+      if (!all(is.na(SEC))){pvalsKS_noboot[i] <- SEC$Test[[2]]}
+      
+      km <- tryCatch(survfit(Surv(times, cens) ~ 1), error = function(e) NA)
+      if (!all(is.na(km))) {
+        km_min[i] <- tail(km$surv, 1)
+        t_max[i]  <- tail(km$time, 1)
+      }
+      
+      if (!all(is.na(SEC)) && !is.na(t_max[i])){
+        SEC_min[i] <- tryCatch(
+          1 - switch(h0, 
+                     weibull = pweibull(q = t_max[i], shape = SEC$Estimates[[1]], scale = SEC$Estimates[[2]]),
+                     lognormal = plnorm(q = t_max[i], meanlog = SEC$Estimates[[1]], sdlog = SEC$Estimates[[2]]),
+                     logistic = plogis(q = t_max[i], location = SEC$Estimates[[1]], scale = SEC$Estimates[[2]])),
+          error = function(e) NA)
+      }
+      
     }
     
     results <- data.frame(
@@ -87,12 +106,6 @@ calc_tests_plus2 <- function(folder, alpha = 0.1, h0, n){
 
 
 
-
-
-
-
-
-
 calc_tests_plus3 <- function(folder, alpha = 0.1, h0, n){
   library(GofCens)
   library(epitools)
@@ -110,7 +123,7 @@ calc_tests_plus3 <- function(folder, alpha = 0.1, h0, n){
   )
   
   
-  files <- list.files(folder, pattern = "Censoring_1_.*\\.RData$", full.names = TRUE)
+  files <- list.files(folder, pattern = "Censoring_1_.*n_75.*\\.RData$", full.names = TRUE)
   
   for(file in files){ #---------------------------------------OJO--------------------------------------
     
@@ -127,7 +140,7 @@ calc_tests_plus3 <- function(folder, alpha = 0.1, h0, n){
     all3 <- NULL
     SEC <- NULL
     
-    for (i in 1:n) {
+    for (i in 1:n){
       print(i)
       km <- NULL
       SEC <- NULL
@@ -135,22 +148,41 @@ calc_tests_plus3 <- function(folder, alpha = 0.1, h0, n){
       times <- dados$times
       cens <- dados$cens
       
-      # Calculate p-values for each test
-      all3 <- try(gofcens(times, cens, distr = h0))
+      pvalsCvM[i]      <- NA
+      pvalsKS[i]       <- NA
+      pvalsAD[i]       <- NA
+      pvalsKS_noboot[i] <- NA
+      km_min[i]        <- NA
+      t_max[i]         <- NA
+      SEC_min[i]       <- NA
       
-      pvalsCvM[i] <- try(all3$pval[2])
-      pvalsKS[i] <- try(all3$pval[1])
-      pvalsAD[i] <- try(all3$pval[3])
-      SEC <- try(KScens(times, cens, distr = h0, boot = FALSE))
-      pvalsKS_noboot[i] <- SEC$Test[[2]]
-      km <- survfit(Surv(times, cens) ~ 1)
-      km_min[i] <- tail(km$surv, 1)
-      t_max[i] <- tail(km$time, 1)
       
-      SEC_min[i] <- 1 - switch(h0,
-                               weibull = pweibull(q = t_max[i], shape = SEC$Estimates[[1]], scale = SEC$Estimates[[2]]),
-                               lognormal = plnorm(q = t_max[i], meanlog = SEC$Estimates[[1]], sdlog = SEC$Estimates[[2]]),
-                               logistic = plogis(q = t_max[i], location = SEC$Estimates[[1]], scale = SEC$Estimates[[2]]))
+      all3 <- tryCatch(gofcens(times, cens, distr = h0), error = function(e) NA)
+      
+      if (!all(is.na(all3))){
+        pvalsCvM[i] <- all3$pval[2]
+        pvalsKS[i]  <- all3$pval[1]
+        pvalsAD[i]  <- all3$pval[3]
+      }
+      
+      SEC <- tryCatch(KScens(times, cens, distr = h0, boot = FALSE), error = function(e) NA)
+      if (!all(is.na(SEC))){pvalsKS_noboot[i] <- SEC$Test[[2]]}
+      
+      km <- tryCatch(survfit(Surv(times, cens) ~ 1), error = function(e) NA)
+      if (!all(is.na(km))) {
+        km_min[i] <- tail(km$surv, 1)
+        t_max[i]  <- tail(km$time, 1)
+      }
+      
+      if (!all(is.na(SEC)) && !is.na(t_max[i])){
+        SEC_min[i] <- tryCatch(
+          1 - switch(h0, 
+                     weibull = pweibull(q = t_max[i], shape = SEC$Estimates[[1]], scale = SEC$Estimates[[2]]),
+                     lognormal = plnorm(q = t_max[i], meanlog = SEC$Estimates[[1]], sdlog = SEC$Estimates[[2]]),
+                     logistic = plogis(q = t_max[i], location = SEC$Estimates[[1]], scale = SEC$Estimates[[2]])),
+          error = function(e) NA)
+      }
+      
     }
     
     results <- data.frame(
@@ -188,4 +220,4 @@ calc_tests_plus2("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/L
 #Falla solo 1:
 
 calc_tests_plus3("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Lognormal_RandomCensoring", 
-                alpha = 0.1, h0 = "logistic", n = 3)
+                alpha = 0.1, h0 = "logistic", n = 1000)
