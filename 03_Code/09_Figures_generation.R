@@ -105,9 +105,120 @@ ggsave(filename = "04_Output/Figures/Figure01_KM_visualization.png", plot = p1, 
 #-------------------------------------------------------------------------------
 ################################################################################
 
+library(GofCens)
+library(grid)
+library(gridExtra)
+library(survival)
+library(ggplot2)
+library(dplyr)
+
+set.seed(28657)
+
+dat_asim_0.7 <- data.frame(times = rweibull(100, 2, 20))
+quant <- quantile(dat_asim_0.7$times,0.7)
+cens <- c()
+cens <- ifelse(dat_asim_0.7$times < quant, 1, 0)
+dat_asim_0.7$times[dat_asim_0.7$times > quant] <- quant
+dat_asim_0.7$cens <- cens
+
+sum(dat_asim_0.7$cens==0)/length(dat_asim_0.7$cens)
+
+
+km_fit <- survfit(Surv(dat_asim_0.7$times, dat_asim_0.7$cens) ~ 1)
+km_df <- data.frame(time = km_fit$time, surv = km_fit$surv)
+km_surv_max <- km_df$surv[km_df$time == max(dat_asim_0.7$times[dat_asim_0.7$cens == 1])]
+
+ln_fit <- survreg(Surv(dat_asim_0.7$times, dat_asim_0.7$cens) ~ 1, dist = "lognormal")
+mu_hat <- ln_fit$coefficients
+sigma_hat <- ln_fit$scale
+
+S_lognorm <- function(t, mu, sigma) 1 - plnorm(t, mu, sigma)
+t_grid <- seq(0, max(dat_asim_0.7$times), length.out = 500)
+param_df <- data.frame(time = t_grid, surv = S_lognorm(t_grid, mu_hat, sigma_hat))
+
+p2 <- ggplot() +
+    geom_step(data = km_df, aes(x = time, y = surv, color = "Kaplan-Meier"), linewidth = 1.1) +
+    labs(
+      subtitle = "Survival Function with 30% Administrative Censoring",
+      x = "Time",
+      y = "Survival Probability"
+    ) +
+    scale_color_manual(values = c("Kaplan-Meier" = "blue", "Log-normal" = "red")) +
+    theme_bw() +
+    theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 12, face = "italic", hjust = 0.5),
+      axis.title = element_text(size = 12, face = "bold"),
+      axis.text = element_text(size = 10),
+      legend.position = c(0.835, 0.82),
+      legend.background = element_rect(fill = "white", color = "black"),
+      legend.title = element_text(size = 11),
+      legend.text = element_text(size = 10)
+    ) + scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.15)) + 
+    geom_hline(yintercept = 0.3, color = "darkolivegreen", linetype = 2, linewidth = 1) + 
+    annotate("text", x = 3, y = 0.37, label = round(km_surv_max,2), size = 5, color = "darkolivegreen")
+
+(p2 <- p2 + theme(legend.position = "none"))
 
 
 
+set.seed(427)
+
+dat_asim_0.7 <- data.frame(times = rweibull(100, 2, 20))
+censt <- rexp(100, 1/47.5)
+quant <- rep(quantile(dat_asim_0.7$times, probs = 0.9), 100)
+tobs_asim_0.7 <- pmin(dat_asim_0.7$times, censt, quant)
+delta <- as.numeric(dat_asim_0.7$times <= censt & dat_asim_0.7$times <= quant)
+dat_asim_0.7 <- data.frame(times = tobs_asim_0.7, cens = delta)
+
+sum(dat_asim_0.7$cens==0)/length(dat_asim_0.7$cens)
+
+
+km_fit <- survfit(Surv(dat_asim_0.7$times, dat_asim_0.7$cens) ~ 1)
+km_df <- data.frame(time = km_fit$time, surv = km_fit$surv)
+km_surv_max <- km_df$surv[km_df$time == max(dat_asim_0.7$times[dat_asim_0.7$cens == 1])]
+
+ln_fit <- survreg(Surv(dat_asim_0.7$times, dat_asim_0.7$cens) ~ 1, dist = "lognormal")
+mu_hat <- ln_fit$coefficients
+sigma_hat <- ln_fit$scale
+
+S_lognorm <- function(t, mu, sigma) 1 - plnorm(t, mu, sigma)
+t_grid <- seq(0, max(dat_asim_0.7$times), length.out = 500)
+param_df <- data.frame(time = t_grid, surv = S_lognorm(t_grid, mu_hat, sigma_hat))
+
+p3 <- ggplot() +
+    geom_step(data = km_df, aes(x = time, y = surv, color = "Kaplan-Meier"), linewidth = 1.1) +
+    labs(
+      subtitle = "Survival Function with 30% Random Censoring",
+      x = "Time",
+      y = "Survival Probability",
+      color = "Curves"
+    ) +
+    scale_color_manual(values = c("Kaplan-Meier" = "blue", "Log-normal" = "red")) +
+    theme_bw() +
+    theme(
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 12, face = "italic", hjust = 0.5),
+      axis.title = element_text(size = 12, face = "bold"),
+      axis.text = element_text(size = 10),
+      legend.position = c(0.835, 0.82),
+      legend.background = element_rect(fill = "white", color = "black"),
+      legend.title = element_text(size = 11),
+      legend.text = element_text(size = 10)
+    ) + scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.15)) + 
+    geom_hline(yintercept = km_surv_max, color = "darkolivegreen", linetype = 2, linewidth = 1) + 
+    annotate("text", x = 3, y = km_surv_max+0.07, label = round(km_surv_max,2),
+             size = 5, color = "darkolivegreen")
+
+(p3 <- p3 + theme(legend.position = "none"))
+
+
+(combined_plots <- (p2 + p3 + plot_layout(guides = "collect") & theme(plot.subtitle = element_text(size = 18, face = "italic", hjust = 0.5),
+                                                                      axis.title = element_text(size = 20, face = "bold"),
+                                                                      axis.text = element_text(size = 20))) +
+    plot_annotation(theme =  theme(plot.title = element_text(size = 30, face = "bold", hjust = 0.5))))
+
+ggsave(filename = "04_Output/Figures/Figure03_Censoring_Visualization_Comparison.png", plot = combined_plots, width = 2130*2, height = 2000, units = "px")
 
 
 ################################################################################
