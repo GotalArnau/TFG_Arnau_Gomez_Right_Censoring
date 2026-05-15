@@ -139,7 +139,7 @@ param_df <- data.frame(time = t_grid, surv = S_lognorm(t_grid, mu_hat, sigma_hat
 p2 <- ggplot() +
     geom_step(data = km_df, aes(x = time, y = surv, color = "Kaplan-Meier"), linewidth = 1.1) +
     labs(
-      subtitle = "Survival Function with 30% Administrative Censoring",
+      subtitle = "Survival function with 30% Administrative censoring",
       x = "Time",
       y = "Survival Probability"
     ) +
@@ -189,7 +189,7 @@ param_df <- data.frame(time = t_grid, surv = S_lognorm(t_grid, mu_hat, sigma_hat
 p3 <- ggplot() +
     geom_step(data = km_df, aes(x = time, y = surv, color = "Kaplan-Meier"), linewidth = 1.1) +
     labs(
-      subtitle = "Survival Function with 30% Random Censoring",
+      subtitle = "Survival function with 30% Random censoring",
       x = "Time",
       y = "Survival Probability",
       color = "Curves"
@@ -218,7 +218,7 @@ p3 <- ggplot() +
                                                                       axis.text = element_text(size = 20))) +
     plot_annotation(theme =  theme(plot.title = element_text(size = 30, face = "bold", hjust = 0.5))))
 
-ggsave(filename = "04_Output/Figures/Figure03_Censoring_Visualization_Comparison.png", plot = combined_plots, width = 2130*2, height = 2000, units = "px")
+ggsave(filename = "04_Output/Figures/Figure04_Censoring_Visualization_Comparison.png", plot = combined_plots, width = 2130*2, height = 2000, units = "px")
 
 
 ################################################################################

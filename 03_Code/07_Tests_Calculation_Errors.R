@@ -15,7 +15,7 @@ calc_tests_plus2 <- function(folder, alpha = 0.1, h0, n){
   )
   
   
-  files <- list.files(folder, pattern = "Censoring_(0\\.7|1)_.*\\.RData$", full.names = TRUE)
+  files <- list.files(folder, pattern = "Censoring_(0\\.7|1)_.*n_75.*\\.RData$", full.names = TRUE)
   
   for(file in files){ #---------------------------------------OJO--------------------------------------
     
