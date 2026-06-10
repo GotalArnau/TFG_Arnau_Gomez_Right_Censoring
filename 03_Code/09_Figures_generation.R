@@ -81,9 +81,9 @@ points_df <- data.frame(
    geom_segment(aes(x = 10, xend = 10, y = S0_tmax, yend = S_km_tmax),arrow = arrow(length = unit(0.5, "cm")),
                 color = "orange", linewidth = 1.3) +
    theme_bw() + 
-   annotate("text", x = t_max, y = S_km_tmax + 0.07, label = expression(hat(S)(t[max])), hjust = -0.2, color = "darkgreen", 
+   annotate("text", x = t_max, y = S_km_tmax + 0.07, label = expression(hat(S)(t[m])), hjust = -0.2, color = "darkgreen", 
             size = 5) +
-   annotate("text", x = t_max, y = S0_tmax + 0.07, label = expression(hat(S)[H[0]](t[max], hat(theta)[ML])), hjust = -0.1, 
+   annotate("text", x = t_max, y = S0_tmax + 0.07, label = expression((S)[0](t[m], hat(theta))), hjust = -0.1, 
             color = "darkgreen", size = 5) +
    annotate("text", x = 10, y = (S_km_tmax + S0_tmax) / 2, label = expression(Diff[t[max]]), hjust = -0.2,
             color = "orange", size = 5) +
@@ -222,6 +222,131 @@ p3 <- ggplot() +
 ggsave(filename = "04_Output/Figures/Figure04_Censoring_Visualization_Comparison.png", plot = combined_plots, width = 2130*2, height = 2000, units = "px")
 
 
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Density visualization by Skewness
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(patchwork)
+
+
+###############################################################################
+# Weibull
+################################################################################
+
+x <- seq(0, 100, length.out = 1000)
+
+scale_param <- 20
+
+shape_params <- c(3.5, 1.7, 1)
+
+df <- data.frame(
+  x = rep(x, times = length(shape_params)),
+  shape = factor(rep(shape_params, each = length(x)))
+)
+
+df$y <- with(df, dweibull(x, shape = as.numeric(as.character(shape)), scale = scale_param))
+
+
+(p4 <- ggplot(df, aes(x = x, y = y, color = shape)) +
+    geom_line(linewidth = 1) +
+    labs(
+      x = "Time",
+      y = "Density",
+    color = NULL
+    ) +
+    scale_color_discrete(labels = c(
+      "3.5" = expression("Symmetric " * alpha == 3.5),
+      "1.7" = expression("Moderately skewed " * alpha == 1.7 * " "),
+      "1"   = expression("Highly skewed " * alpha == 1)
+    ))  +
+    theme_minimal(base_size = 13) +
+    theme(
+      legend.position = c(0.9, 0.85),
+      legend.justification = c(1, 1), 
+      legend.background = element_rect(fill = "white", color = "black"),
+      legend.key = element_rect(fill = "white", color = NA),
+      legend.text = element_text(size = 20)
+    ))
+
+ggsave(filename = "04_Output/Figures/Weibull_Density_Fucntions.png", plot = p4, width = 2130*2, height = 2000, units = "px")
+
+################################################################################
+# Lognormal
+################################################################################
+
+x <- seq(0, 100, length.out = 1000)
+
+mu_param <- 2
+
+sdlog_params <- c(0.01, 0.4, 1.5)
+
+df <- data.frame(
+  x = rep(x, times = length(sdlog_params)),
+  sdlog = factor(rep(sdlog_params, each = length(x)))
+)
+
+df$y <- with(df, dlnorm(x, sdlog = as.numeric(as.character(sdlog)), meanlog = mu_param))
+
+
+(p4 <- ggplot(df, aes(x = x, y = y, color = sdlog)) +
+    geom_line(linewidth = 1) +
+    labs(
+      x = "Time",
+      y = "Density",
+      color = NULL
+    ) +
+    scale_color_discrete(labels = c(
+      "0.01" = expression("Symmetric " * sdlog == 0.01),
+      "0.4" = expression("Moderately skewed " * sdlog == 0.4 * " "),
+      "1.5"   = expression("Highly skewed " * sdlog == 1.5)
+    ))  +
+    theme_minimal(base_size = 13) +
+    theme(
+      legend.position = c(0.9, 0.85),
+      legend.justification = c(1, 1), 
+      legend.background = element_rect(fill = "white", color = "black"),
+      legend.key = element_rect(fill = "white", color = NA)
+    ))
+
+
+(p4_zoom <- ggplot(df, aes(x = x, y = y, color = sdlog)) +
+    geom_line(linewidth = 1) +
+    labs(
+      x = "Time",
+      y = "Density",
+      color = NULL
+    ) +
+    scale_color_discrete(labels = c(
+      "0.01" = expression("Symmetric " * sdlog == 0.01),
+      "0.4" = expression("Moderately skewed " * sdlog == 0.4 * " "),
+      "1.5"   = expression("Highly skewed " * sdlog == 1.5)
+    ))  +
+    coord_cartesian(xlim = c(0, 30), ylim = c(0, 0.2)) +
+    theme_minimal(base_size = 13) +
+    theme(
+      legend.position = c(0.9, 0.85),
+      legend.justification = c(1, 1), 
+      legend.background = element_rect(fill = "white", color = "black"),
+      legend.key = element_rect(fill = "white", color = NA)
+    ))
+
+
+(combine_plots2 <- (p4 + p4_zoom + plot_layout(guides = "collect") &
+                     theme(
+                       legend.position = "bottom",
+                       legend.direction = "horizontal",
+                       legend.text = element_text(size = 20)
+                       
+                     ) ))
+
+
+ggsave(filename = "04_Output/Figures/Lognormal_Density_Fucntions.png", plot = combine_plots2, width = 2130*2, height = 2000, units = "px")
+
+
 ################################################################################
 #-------------------------------------------------------------------------------
 # Power comparison for complete data by Null Hypothesis
@@ -256,10 +381,11 @@ df_W_wei2 <- df_W_wei %>%
   filter(cens == "0% Censura") %>%
   mutate("Hyp_nul" = rep("Weibull"), cens = NULL)
 
-df_complet <- rbind(df_W_logistic2, df_W_log2, df_W_wei2)
+df_complet <- rbind(df_W_logistic2, df_W_log2, df_W_wei2 )%>%
+  filter(test != "KS No Bootstrap")
 
 
-(p2 <- ggplot(df_complet, aes(x = test, y = power, shape = Hyp_nul, fill = Hyp_nul)) + geom_jitter(size = 2.5, stroke = 0.5, height = 0, width = 0.1) +
+(p2 <- ggplot(df_complet, aes(x = test, y = power, shape = Hyp_nul, fill = Hyp_nul)) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
     scale_shape_manual(values = c(22,24,23)) +
     scale_fill_manual(values = c( "Logistic" = "#CAFF70", "Lognormal" = "#79CDCD","Weibull" = "#FF6A6A")) +
     ggtitle(paste0("Power of each tests for complete data by Null Hypothesis"), subtitle = paste0("X ~ Weibull")) +
@@ -302,10 +428,11 @@ df_L_wei2 <- df_L_wei %>%
   filter(cens == "0% Censura") %>%
   mutate("Hyp_nul" = rep("Weibull"), cens = NULL)
 
-df_complet <- rbind(df_L_logistic2, df_L_log2, df_L_wei2)
+df_complet <- rbind(df_L_logistic2, df_L_log2, df_L_wei2) %>%
+  filter(test != "KS No Bootstrap")
 
 
-(p3 <- ggplot(df_complet, aes(x = test, y = power, shape = Hyp_nul, fill = Hyp_nul)) + geom_jitter(size = 2.5, stroke = 0.5, height = 0, width = 0.1) +
+(p3 <- ggplot(df_complet, aes(x = test, y = power, shape = Hyp_nul, fill = Hyp_nul)) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
     scale_shape_manual(values = c(22,24,23)) +
     scale_fill_manual(values = c( "Logistic" = "#CAFF70", "Lognormal" = "#79CDCD","Weibull" = "#FF6A6A")) +
     ggtitle(paste0("Power of each tests for complete data by Null Hypothesis"), subtitle = paste0("X ~ Lognormal")) +
@@ -325,13 +452,214 @@ ggsave(filename = "C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/04_Out
 p3 <- p3 + labs(title=NULL)
 
 (combined_complete_data <- (p2 + p3 + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
-                                                                              legend.title = element_text(size = 12, face = "bold"),
-                                                                              legend.text = element_text(size = 12),
-                                                                              plot.subtitle = element_text(size = 12, face = "italic", hjust = 0.5),
-                                                                              axis.title = element_text(size = 12, face = "bold"),
-                                                                              axis.text = element_text(size = 12))) +
-    plot_annotation(title = "Power of each tests for complete data by Null Hypothesis", 
+                                                                              legend.title = element_text(size = 20, face = "bold"),
+                                                                              legend.text = element_text(size = 20),
+                                                                              plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                              axis.title = element_text(size = 15, face = "bold"),
+                                                                              axis.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
                     theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
 
-ggsave(filename = "C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/04_Output/02_Plots/New_plots/Figure3_Merge_Power_complete_data.png", 
-       plot = combined_complete_data, width = 2130*2, height = 1800, units = "px")
+ggsave(filename = "04_Output/Figures/Power_Complete_Data_Null.png", plot = combined_complete_data, width = 2130*2, height = 1800, units = "px")
+
+
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Power comparison for complete data by Sample Size
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Weibull
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_W_logistic <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+
+df_W_logistic2 <- df_W_logistic %>%
+  select(power, cens, test, n) %>%
+  filter(cens == "0% Censura") %>%
+  mutate("Hyp_nul" = rep("Logistic"), cens = NULL)%>%
+  filter(test != "KS No Bootstrap")
+
+df_W_log2 <- df_W_log %>%
+  select(power, cens, test, n) %>%
+  filter(cens == "0% Censura") %>%
+  mutate("Hyp_nul" = rep("Lognormal"), cens = NULL)%>%
+  filter(test != "KS No Bootstrap")
+
+df_W_wei2 <- df_W_wei %>%
+  select(power, cens, test, n) %>%
+  filter(cens == "0% Censura") %>%
+  mutate("Hyp_nul" = rep("Weibull"), cens = NULL)%>%
+  filter(test != "KS No Bootstrap")
+
+df_complet <- rbind(df_W_logistic2, df_W_log2, df_W_wei2 )%>%
+  filter(test != "KS No Bootstrap")
+
+
+(p2 <- ggplot(df_W_logistic2, aes(x = test, y = power, shape = factor(n), fill = factor(n))) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "75" = "#CAFF70", "150" = "#79CDCD","300" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each tests for complete data by Sample Size"), subtitle = paste0("X ~ Weibull. H0: Logistic")) +
+    labs(x = "Test", y = "Power", fill = "Sample Size:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+(p3 <- ggplot(df_W_log2, aes(x = test, y = power, shape = factor(n), fill = factor(n))) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "75" = "#CAFF70", "150" = "#79CDCD","300" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each tests for complete data by Sample Size"), subtitle = paste0("X ~ Weibull. H0: Lognormal")) +
+    labs(x = "Test", y = "Power", fill = "Sample Size:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+(p4 <- ggplot(df_W_wei2, aes(x = test, y = power, shape = factor(n), fill = factor(n))) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "75" = "#CAFF70", "150" = "#79CDCD","300" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each tests for complete data by Sample Size"), subtitle = paste0("X ~ Weibull. H0: Weibull")) +
+    labs(x = "Test", y = "Power", fill = "Sample Size:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+p2 <- p2 + labs(title = NULL)
+p3 <- p3 + labs(title = NULL)
+p4 <- p4 + labs(title = NULL)
+
+(combined_complete_data_W <- (p2 + p3 + p4 + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                              legend.title = element_text(size = 20, face = "bold"),
+                                                                              legend.text = element_text(size = 20),
+                                                                              plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                              axis.title = element_text(size = 15, face = "bold"),
+                                                                              axis.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+ggsave(filename = "04_Output/Figures/Power_Complete_Data_SampleSize_Weibull.png", plot = combined_complete_data_W, width = 2130*3, height = 1800, units = "px")
+
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Logistic
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_L_logistic <- get(load("C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/SEC/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/SEC/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/SEC/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+
+df_L_logistic2 <- df_L_logistic %>%
+  select(power, cens, test, n) %>%
+  filter(cens == "0% Censura") %>%
+  mutate("Hyp_nul" = rep("Logistic"), cens = NULL)%>%
+  filter(test != "KS No Bootstrap")
+
+df_L_log2 <- df_L_log %>%
+  select(power, cens, test, n) %>%
+  filter(cens == "0% Censura") %>%
+  mutate("Hyp_nul" = rep("Lognormal"), cens = NULL)%>%
+  filter(test != "KS No Bootstrap")
+
+df_L_wei2 <- df_L_wei %>%
+  select(power, cens, test, n) %>%
+  filter(cens == "0% Censura") %>%
+  mutate("Hyp_nul" = rep("Weibull"), cens = NULL)%>%
+  filter(test != "KS No Bootstrap")
+
+df_complet <- rbind(df_L_logistic2, df_L_log2, df_L_wei2) %>%
+  filter(test != "KS No Bootstrap")
+
+
+(p2 <- ggplot(df_L_logistic2, aes(x = test, y = power, shape = factor(n), fill = factor(n))) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "75" = "#CAFF70", "150" = "#79CDCD","300" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each tests for complete data by Sample Size"), subtitle = paste0("X ~ Lognormal H0: Logistic")) +
+    labs(x = "Test", y = "Power", fill = "Sample Size:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+(p3 <- ggplot(df_L_log2, aes(x = test, y = power, shape = factor(n), fill = factor(n))) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "75" = "#CAFF70", "150" = "#79CDCD","300" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each tests for complete data by Sample Size"), subtitle = paste0("X ~ Lognormal H0: Lognormal")) +
+    labs(x = "Test", y = "Power", fill = "Sample Size:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+(p4 <- ggplot(df_L_wei2, aes(x = test, y = power, shape = factor(n), fill = factor(n))) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "75" = "#CAFF70", "150" = "#79CDCD","300" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each tests for complete data by Sample Size"), subtitle = paste0("X ~ Lognormal H0: Weibull")) +
+    labs(x = "Test", y = "Power", fill = "Sample Size:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+p2 <- p2 + labs(title = NULL)
+p3 <- p3 + labs(title = NULL)
+p4 <- p4 + labs(title = NULL)
+
+(combined_complete_data_L <- (p2 + p3 + p4 + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                                   legend.title = element_text(size = 20, face = "bold"),
+                                                                                   legend.text = element_text(size = 20),
+                                                                                   plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                                   axis.title = element_text(size = 15, face = "bold"),
+                                                                                   axis.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+ggsave(filename = "04_Output/Figures/Power_Complete_Data_SampleSize_Lognormal.png", plot = combined_complete_data_L, width = 2130*3, height = 1800, units = "px")
+
+
+(p_final <- (combined_complete_data_W / combined_complete_data_L + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                                                         legend.title = element_text(size = 30, face = "bold"),
+                                                                                                         legend.text = element_text(size = 30),
+                                                                                                         plot.subtitle = element_text(size = 30, face = "italic", hjust = 0.5),
+                                                                                                         axis.title = element_text(size = 15, face = "bold"),
+                                                                                                         axis.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+ggsave(filename = "04_Output/Figures/Power_Complete_Data_SampleSize.png", plot = p_final, width = 2130*3, height = 2*1800, units = "px")
+
