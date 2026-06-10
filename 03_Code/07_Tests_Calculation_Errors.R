@@ -15,7 +15,7 @@ calc_tests_plus2 <- function(folder, alpha = 0.1, h0, n){
   )
   
   
-  files <- list.files(folder, pattern = "Censoring_(0\\.7|1)_.*n_75.*\\.RData$", full.names = TRUE)
+  files <- list.files(folder, pattern = "Censoring_0\\.7_.*n_150.*Sdlog_0\\.01.*\\.RData$", full.names = TRUE)
   
   for(file in files){ #---------------------------------------OJO--------------------------------------
     
@@ -123,7 +123,7 @@ calc_tests_plus3 <- function(folder, alpha = 0.1, h0, n){
   )
   
   
-  files <- list.files(folder, pattern = "Censoring_1_.*n_75.*\\.RData$", full.names = TRUE)
+  files <- list.files(folder, pattern = "Censoring_1_.*n_300.*Sdlog_1\\.5.*\\.RData$", full.names = TRUE)
   
   for(file in files){ #---------------------------------------OJO--------------------------------------
     
@@ -214,7 +214,7 @@ calc_tests_plus3 <- function(folder, alpha = 0.1, h0, n){
 
 # Falla 0.7 y 1
 calc_tests_plus2("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study/02_Data/Lognormal_AdminCensoring", 
-                alpha = 0.1, h0 = "logistic", n = 1000)
+                alpha = 0.1, h0 = "lognormal", n = 1000)
 
 
 #Falla solo 1:

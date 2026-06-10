@@ -111,6 +111,7 @@ library(gridExtra)
 library(survival)
 library(ggplot2)
 library(dplyr)
+library(patchwork)
 
 set.seed(28657)
 

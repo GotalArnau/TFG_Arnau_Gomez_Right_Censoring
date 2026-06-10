@@ -84,6 +84,7 @@ Power_calc <- function(folder, alpha = 0.1){
 
 
 
+
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 #Random Censoring
 #-----------------------------------------------------------------------------------------------------------------------------------------------
@@ -102,11 +103,11 @@ Power_calc("02_Data/Weibull_RandomCensoring/df_power_all4_weibull")
 #X ~ Lognormal
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 
-graph_comp("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic")
+Power_calc("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic")
 
-graph_comp("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull")
+Power_calc("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull")
 
-graph_comp("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal")
+Power_calc("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal")
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------
@@ -116,20 +117,20 @@ graph_comp("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal")
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 #X ~ Weibull
 #-----------------------------------------------------------------------------------------------------------------------------------------------
-graph_comp("02_Data/Weibull_AdminCensoring/df_power_all4_logistic")
+Power_calc("02_Data/Weibull_AdminCensoring/df_power_all4_logistic")
 
-graph_comp("02_Data/Weibull_AdminCensoring/df_power_all4_lognormal")
+Power_calc("02_Data/Weibull_AdminCensoring/df_power_all4_lognormal")
 
-graph_comp("02_Data/Weibull_AdminCensoring/df_power_all4_weibull")
+Power_calc("02_Data/Weibull_AdminCensoring/df_power_all4_weibull")
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 #X ~ Lognormal
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 
-graph_comp("02_Data/Weibull_AdminCensoring/df_power_all4_logistic")
+Power_calc("02_Data/Lognormal_AdminCensoring/df_power_all4_logistic")
 
-graph_comp("02_Data/Weibull_AdminCensoring/df_power_all4_weibull")
+Power_calc("02_Data/Lognormal_AdminCensoring/df_power_all4_weibull")
 
-graph_comp("02_Data/Weibull_AdminCensoring/df_power_all4_lognormal")
+Power_calc("02_Data/Lognormal_AdminCensoring/df_power_all4_lognormal")
 
