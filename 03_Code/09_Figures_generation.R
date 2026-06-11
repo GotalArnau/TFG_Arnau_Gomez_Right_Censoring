@@ -408,9 +408,9 @@ p2 <- p2 + labs(title = NULL)
 # X ~ Logistic
 #----------------------------------------------------------------------------------------------------------------------------
 
-df_L_logistic <- get(load("C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/SEC/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
-df_L_log <- get(load("C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/SEC/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
-df_L_wei <- get(load("C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/SEC/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+df_L_logistic <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
 
 
 df_L_logistic2 <- df_L_logistic %>%
@@ -662,4 +662,354 @@ ggsave(filename = "04_Output/Figures/Power_Complete_Data_SampleSize_Lognormal.pn
                     theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
 
 ggsave(filename = "04_Output/Figures/Power_Complete_Data_SampleSize.png", plot = p_final, width = 2130*3, height = 2*1800, units = "px")
+
+
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Power comparison for administrative censored data by Null Hypothesis
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Weibull
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_W_logistic <- get(load("02_Data/Weibull_AdminCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_AdminCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_AdminCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+
+df_W_logistic2 <- df_W_logistic %>%
+  select(power, cens, test) %>%
+  filter(cens == "30% Censura") %>%
+  mutate("Hyp_nul" = rep("Logistic"), cens = NULL)
+
+df_W_log2 <- df_W_log %>%
+  select(power, cens, test) %>%
+  filter(cens == "30% Censura") %>%
+  mutate("Hyp_nul" = rep("Lognormal"), cens = NULL)
+
+df_W_wei2 <- df_W_wei %>%
+  select(power, cens, test) %>%
+  filter(cens == "30% Censura") %>%
+  mutate("Hyp_nul" = rep("Weibull"), cens = NULL)
+
+df_complet <- rbind(df_W_logistic2, df_W_log2, df_W_wei2 )%>%
+  filter(test != "KS No Bootstrap")
+
+
+(p2 <- ggplot(df_complet, aes(x = test, y = power, shape = Hyp_nul, fill = Hyp_nul)) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "Logistic" = "#CAFF70", "Lognormal" = "#79CDCD","Weibull" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each Tests for Administrative Censored Data by Null Hypothesis"), subtitle = paste0("X ~ Weibull. 30% Censoring")) +
+    labs(x = "Test", y = "Power", fill = "Null Hypothesis:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+ggsave(filename = "C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/04_Output/02_Plots/New_plots/Figure3.1_Weibull_Power_complete_data.png", 
+       plot = p2, width = 2130, height = 1600, units = "px")
+
+p2 <- p2 + labs(title = NULL)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Logistic
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_L_logistic <- get(load("02_Data/Lognormal_AdminCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_AdminCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_AdminCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+
+df_L_logistic2 <- df_L_logistic %>%
+  select(power, cens, test) %>%
+  filter(cens == "30% Censura") %>%
+  mutate("Hyp_nul" = rep("Logistic"), cens = NULL)
+
+df_L_log2 <- df_L_log %>%
+  select(power, cens, test) %>%
+  filter(cens == "30% Censura") %>%
+  mutate("Hyp_nul" = rep("Lognormal"), cens = NULL)
+
+df_L_wei2 <- df_L_wei %>%
+  select(power, cens, test) %>%
+  filter(cens == "30% Censura") %>%
+  mutate("Hyp_nul" = rep("Weibull"), cens = NULL)
+
+df_complet <- rbind(df_L_logistic2, df_L_log2, df_L_wei2) %>%
+  filter(test != "KS No Bootstrap")
+
+
+(p3 <- ggplot(df_complet, aes(x = test, y = power, shape = Hyp_nul, fill = Hyp_nul)) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "Logistic" = "#CAFF70", "Lognormal" = "#79CDCD","Weibull" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each Tests for Administrative Censored Data by Null Hypothesis"), subtitle = paste0("X ~ Lognormal. 30% Censoring")) +
+    labs(x = "Test", y = "Power", fill = "Null Hypothesis:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+ggsave(filename = "C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/04_Output/02_Plots/New_plots/Figure3.1_Lognoral_Power_complete_data.png", 
+       plot = p3, width = 2130, height = 1600, units = "px")
+
+p3 <- p3 + labs(title=NULL)
+
+(combined_complete_data <- (p2 + p3 + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                              legend.title = element_text(size = 20, face = "bold"),
+                                                                              legend.text = element_text(size = 20),
+                                                                              plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                              axis.title = element_text(size = 15, face = "bold"),
+                                                                              axis.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+ggsave(filename = "04_Output/Figures/Power_AdminCensoring_Data_Null_0.7.png", plot = combined_complete_data, width = 2130*2, height = 1800, units = "px")
+
+
+
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Power comparison for random censored data by Null Hypothesis
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Weibull
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_W_logistic <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+
+df_W_logistic2 <- df_W_logistic %>%
+  select(power, cens, test) %>%
+  filter(cens == "60% Censura") %>%
+  mutate("Hyp_nul" = rep("Logistic"), cens = NULL)
+
+df_W_log2 <- df_W_log %>%
+  select(power, cens, test) %>%
+  filter(cens == "60% Censura") %>%
+  mutate("Hyp_nul" = rep("Lognormal"), cens = NULL)
+
+df_W_wei2 <- df_W_wei %>%
+  select(power, cens, test) %>%
+  filter(cens == "60% Censura") %>%
+  mutate("Hyp_nul" = rep("Weibull"), cens = NULL)
+
+df_complet <- rbind(df_W_logistic2, df_W_log2, df_W_wei2 )%>%
+  filter(test != "KS No Bootstrap")
+
+
+(p2 <- ggplot(df_complet, aes(x = test, y = power, shape = Hyp_nul, fill = Hyp_nul)) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "Logistic" = "#CAFF70", "Lognormal" = "#79CDCD","Weibull" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each Tests for Random Censored Data by Null Hypothesis"), subtitle = paste0("X ~ Weibull. 60% Censoring")) +
+    labs(x = "Test", y = "Power", fill = "Null Hypothesis:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+ggsave(filename = "C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/04_Output/02_Plots/New_plots/Figure3.1_Weibull_Power_complete_data.png", 
+       plot = p2, width = 2130, height = 1600, units = "px")
+
+p2 <- p2 + labs(title = NULL)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Logistic
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_L_logistic <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+
+df_L_logistic2 <- df_L_logistic %>%
+  select(power, cens, test) %>%
+  filter(cens == "60% Censura") %>%
+  mutate("Hyp_nul" = rep("Logistic"), cens = NULL)
+
+df_L_log2 <- df_L_log %>%
+  select(power, cens, test) %>%
+  filter(cens == "60% Censura") %>%
+  mutate("Hyp_nul" = rep("Lognormal"), cens = NULL)
+
+df_L_wei2 <- df_L_wei %>%
+  select(power, cens, test) %>%
+  filter(cens == "60% Censura") %>%
+  mutate("Hyp_nul" = rep("Weibull"), cens = NULL)
+
+df_complet <- rbind(df_L_logistic2, df_L_log2, df_L_wei2) %>%
+  filter(test != "KS No Bootstrap")
+
+
+(p3 <- ggplot(df_complet, aes(x = test, y = power, shape = Hyp_nul, fill = Hyp_nul)) + geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c( "Logistic" = "#CAFF70", "Lognormal" = "#79CDCD","Weibull" = "#FF6A6A")) +
+    ggtitle(paste0("Power of each Tests for Random Censored Data by Null Hypothesis"), subtitle = paste0("X ~ Lognormal. 60% Censoring")) +
+    labs(x = "Test", y = "Power", fill = "Null Hypothesis:") +
+    theme_bw() +
+    theme(legend.position = "right", ) +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list(shape = c(22,24,23), color = "black")),
+           shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9) +
+    annotate("text", x = 0.5, y = 0.07, label = "alpha = 0.1", hjust = -0.02, color = "darkblue", 
+             size = 3.5, angle = 330))
+
+ggsave(filename = "C:/Users/arnau.gomez/Desktop/GofCens_Paper_Simulations/04_Output/02_Plots/New_plots/Figure3.1_Lognoral_Power_complete_data.png", 
+       plot = p3, width = 2130, height = 1600, units = "px")
+
+p3 <- p3 + labs(title=NULL)
+
+(combined_complete_data <- (p2 + p3 + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                              legend.title = element_text(size = 20, face = "bold"),
+                                                                              legend.text = element_text(size = 20),
+                                                                              plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                              axis.title = element_text(size = 15, face = "bold"),
+                                                                              axis.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+ggsave(filename = "04_Output/Figures/Power_RandomCensoring_Data_Null_0.4.png", plot = combined_complete_data, width = 2130*2, height = 1800, units = "px")
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Power comparison for administrative censored data by Skewness fo Tests = KS
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Weibull
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_W_logistic <- get(load("02_Data/Weibull_AdminCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_AdminCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_AdminCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+df_KS <- df_W_logistic %>%
+  select(power, test, symmetry, cens) %>%
+  filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+  mutate(Distribution = "Logistic") %>%
+  
+  rbind(
+    df_W_log %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+      mutate(Distribution = "Lognormal")
+  ) %>%
+  
+  rbind(
+    df_W_wei %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+      mutate(Distribution = "Weibull")
+  ) %>%
+  mutate(symmetry = factor(symmetry,
+                       levels = c("Symmetric",
+                                  "Asymmetric",
+                                  "Extremly asymmetric")))
+
+(p_KS_W <- ggplot(df_KS, aes(x = factor(symmetry), y = power, shape = Distribution, fill = Distribution)) +
+    geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
+    ggtitle("Power of Kolmogorov-Smirnov test under different skewness levels",
+            subtitle = "X ~ Weibull") +
+    labs(x = "Skewness level", y = "Power", fill = "Distribution:", shape = "Distribution:") +
+    theme_bw() +
+    theme(legend.position = "right") +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list( shape = c(22,24,23), color = "black")), shape = "none") +
+        geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
+
+p_KS_W <- p_KS_W + labs(title = NULL)
+
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Lognormal
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_L_logistic <- get(load("02_Data/Lognormal_AdminCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_AdminCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_AdminCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+df_KS <- df_L_logistic %>%
+  select(power, test, symmetry, cens) %>%
+  filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+  mutate(Distribution = "Logistic") %>%
+  
+  rbind(
+    df_L_log %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+      mutate(Distribution = "Lognormal")
+  ) %>%
+  
+  rbind(
+    df_L_wei %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+      mutate(Distribution = "Weibull")
+  ) %>%
+  mutate(symmetry = factor(symmetry,
+                           levels = c("Symmetric",
+                                      "Asymmetric",
+                                      "Extremly asymmetric")))
+
+(p_KS_L <- ggplot(df_KS, aes(x = factor(symmetry), y = power, shape = Distribution, fill = Distribution)) +
+    geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
+    ggtitle("Power of Kolmogorov-Smirnov test under different skewness levels",
+            subtitle = "X ~ Lognormal") +
+    labs(x = "Skewness level", y = "Power", fill = "Distribution:", shape = "Distribution:") +
+    theme_bw() +
+    theme(legend.position = "right") +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list( shape = c(22,24,23), color = "black")), shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
+
+p_KS_L <- p_KS_L + labs(title = NULL)
+
+(p_KS_combined <- (p_KS_W + p_KS_L + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                              legend.title = element_text(size = 20, face = "bold"),
+                                                                              legend.text = element_text(size = 20),
+                                                                              plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                              axis.title = element_text(size = 15, face = "bold"),
+                                                                              axis.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+
+ggsave(filename = "04_Output/Figures/Power_Kolmogorov_Skewness_AdminCensoring.png", plot = p_KS_combined, width = 2130*2, height = 1800, units = "px")
 
