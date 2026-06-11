@@ -663,8 +663,6 @@ ggsave(filename = "04_Output/Figures/Power_Complete_Data_SampleSize_Lognormal.pn
 
 ggsave(filename = "04_Output/Figures/Power_Complete_Data_SampleSize.png", plot = p_final, width = 2130*3, height = 2*1800, units = "px")
 
-
-
 ################################################################################
 #-------------------------------------------------------------------------------
 # Power comparison for administrative censored data by Null Hypothesis
@@ -935,9 +933,9 @@ df_KS <- df_W_logistic %>%
       mutate(Distribution = "Weibull")
   ) %>%
   mutate(symmetry = factor(symmetry,
-                       levels = c("Symmetric",
-                                  "Asymmetric",
-                                  "Extremly asymmetric")))
+                           levels = c("Symmetric",
+                                      "Asymmetric",
+                                      "Extremly asymmetric")))
 
 (p_KS_W <- ggplot(df_KS, aes(x = factor(symmetry), y = power, shape = Distribution, fill = Distribution)) +
     geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
@@ -945,12 +943,12 @@ df_KS <- df_W_logistic %>%
     scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
     ggtitle("Power of Kolmogorov-Smirnov test under different skewness levels",
             subtitle = "X ~ Weibull") +
-    labs(x = "Skewness level", y = "Power", fill = "Distribution:", shape = "Distribution:") +
+    labs(x = "Skewness level", y = "Power", fill = "Null Hypotheses:", shape = "Null Hypotheses:") +
     theme_bw() +
     theme(legend.position = "right") +
     lims(y = c(-0.01,1.01)) +
     guides(fill = guide_legend(override.aes = list( shape = c(22,24,23), color = "black")), shape = "none") +
-        geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
 
 p_KS_W <- p_KS_W + labs(title = NULL)
 
@@ -992,7 +990,7 @@ df_KS <- df_L_logistic %>%
     scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
     ggtitle("Power of Kolmogorov-Smirnov test under different skewness levels",
             subtitle = "X ~ Lognormal") +
-    labs(x = "Skewness level", y = "Power", fill = "Distribution:", shape = "Distribution:") +
+    labs(x = "Skewness level", y = "Power", fill = "Null Hypotheses:", shape = "Null Hypotheses:") +
     theme_bw() +
     theme(legend.position = "right") +
     lims(y = c(-0.01,1.01)) +
@@ -1002,14 +1000,843 @@ df_KS <- df_L_logistic %>%
 p_KS_L <- p_KS_L + labs(title = NULL)
 
 (p_KS_combined <- (p_KS_W + p_KS_L + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
-                                                                              legend.title = element_text(size = 20, face = "bold"),
-                                                                              legend.text = element_text(size = 20),
-                                                                              plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
-                                                                              axis.title = element_text(size = 15, face = "bold"),
-                                                                              axis.text = element_text(size = 15))) +
+                                                                             legend.title = element_text(size = 20, face = "bold"),
+                                                                             legend.text = element_text(size = 20),
+                                                                             plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                             axis.title = element_text(size = 15, face = "bold"),
+                                                                             axis.text = element_text(size = 15))) +
     plot_annotation(title = NULL, 
                     theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
 
 
 ggsave(filename = "04_Output/Figures/Power_Kolmogorov_Skewness_AdminCensoring.png", plot = p_KS_combined, width = 2130*2, height = 1800, units = "px")
+
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Power comparison for random censored data by Skewness fo Tests = AD
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Weibull
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_W_logistic <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+df_KS <- df_W_logistic %>%
+  select(power, test, symmetry, cens) %>%
+  filter(test == "Anderson-Darling" & cens != "0% Censura") %>%
+  mutate(Distribution = "Logistic") %>%
+  
+  rbind(
+    df_W_log %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Anderson-Darling" & cens != "0% Censura") %>%
+      mutate(Distribution = "Lognormal")
+  ) %>%
+  
+  rbind(
+    df_W_wei %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Anderson-Darling" & cens != "0% Censura") %>%
+      mutate(Distribution = "Weibull")
+  ) %>%
+  mutate(symmetry = factor(symmetry,
+                           levels = c("Symmetric",
+                                      "Asymmetric",
+                                      "Extremly asymmetric")))
+
+(p_KS_W <- ggplot(df_KS, aes(x = factor(symmetry), y = power, shape = Distribution, fill = Distribution)) +
+    geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
+    ggtitle("Power of Anderson-Darling test under different skewness levels",
+            subtitle = "X ~ Weibull") +
+    labs(x = "Skewness level", y = "Power", fill = "Null Hypotheses:", shape = "Null Hypotheses:") +
+    theme_bw() +
+    theme(legend.position = "right") +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list( shape = c(22,24,23), color = "black")), shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
+
+p_KS_W <- p_KS_W + labs(title = NULL)
+
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Lognormal
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_L_logistic <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+df_KS <- df_L_logistic %>%
+  select(power, test, symmetry, cens) %>%
+  filter(test == "Anderson-Darling" & cens != "0% Censura") %>%
+  mutate(Distribution = "Logistic") %>%
+  
+  rbind(
+    df_L_log %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Anderson-Darling" & cens != "0% Censura") %>%
+      mutate(Distribution = "Lognormal")
+  ) %>%
+  
+  rbind(
+    df_L_wei %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Anderson-Darling" & cens != "0% Censura") %>%
+      mutate(Distribution = "Weibull")
+  ) %>%
+  mutate(symmetry = factor(symmetry,
+                           levels = c("Symmetric",
+                                      "Asymmetric",
+                                      "Extremly asymmetric")))
+
+(p_KS_L <- ggplot(df_KS, aes(x = factor(symmetry), y = power, shape = Distribution, fill = Distribution)) +
+    geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
+    ggtitle("Power of Anderson-Darling test under different skewness levels",
+            subtitle = "X ~ Lognormal") +
+    labs(x = "Skewness level", y = "Power", fill = "Null Hypotheses:", shape = "Null Hypotheses:") +
+    theme_bw() +
+    theme(legend.position = "right") +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list( shape = c(22,24,23), color = "black")), shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
+
+p_KS_L <- p_KS_L + labs(title = NULL)
+
+(p_AD_combined <- (p_KS_W + p_KS_L + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                             legend.title = element_text(size = 20, face = "bold"),
+                                                                             legend.text = element_text(size = 20),
+                                                                             plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                             axis.title = element_text(size = 15, face = "bold"),
+                                                                             axis.text = element_text(size = 15))) +
+    plot_annotation(title = "Anderson-Darling test", 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+
+ggsave(filename = "04_Output/Figures/Power_Anderson_Darling_Skewness_RandomCensoring.png", plot = p_AD_combined, width = 2130*2, height = 1800, units = "px")
+
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Power comparison for random censored data by Skewness fo Tests = CvM
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Weibull
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_W_logistic <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+df_KS <- df_W_logistic %>%
+  select(power, test, symmetry, cens) %>%
+  filter(test == "Cramér von Mises" & cens != "0% Censura") %>%
+  mutate(Distribution = "Logistic") %>%
+  
+  rbind(
+    df_W_log %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Cramér von Mises" & cens != "0% Censura") %>%
+      mutate(Distribution = "Lognormal")
+  ) %>%
+  
+  rbind(
+    df_W_wei %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Cramér von Mises" & cens != "0% Censura") %>%
+      mutate(Distribution = "Weibull")
+  ) %>%
+  mutate(symmetry = factor(symmetry,
+                           levels = c("Symmetric",
+                                      "Asymmetric",
+                                      "Extremly asymmetric")))
+
+(p_KS_W <- ggplot(df_KS, aes(x = factor(symmetry), y = power, shape = Distribution, fill = Distribution)) +
+    geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
+    ggtitle("Power of Cramér-von Mises test under different skewness levels",
+            subtitle = "X ~ Weibull") +
+    labs(x = "Skewness level", y = "Power", fill = "Null Hypotheses:", shape = "Null Hypotheses:") +
+    theme_bw() +
+    theme(legend.position = "right") +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list( shape = c(22,24,23), color = "black")), shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
+
+p_KS_W <- p_KS_W + labs(title = NULL)
+
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Lognormal
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_L_logistic <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+df_KS <- df_L_logistic %>%
+  select(power, test, symmetry, cens) %>%
+  filter(test == "Cramér von Mises" & cens != "0% Censura") %>%
+  mutate(Distribution = "Logistic") %>%
+  
+  rbind(
+    df_L_log %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Cramér von Mises" & cens != "0% Censura") %>%
+      mutate(Distribution = "Lognormal")
+  ) %>%
+  
+  rbind(
+    df_L_wei %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Cramér von Mises" & cens != "0% Censura") %>%
+      mutate(Distribution = "Weibull")
+  ) %>%
+  mutate(symmetry = factor(symmetry,
+                           levels = c("Symmetric",
+                                      "Asymmetric",
+                                      "Extremly asymmetric")))
+
+(p_KS_L <- ggplot(df_KS, aes(x = factor(symmetry), y = power, shape = Distribution, fill = Distribution)) +
+    geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
+    ggtitle("Power of Cramér-von Mises test under different skewness levels",
+            subtitle = "X ~ Lognormal") +
+    labs(x = "Skewness level", y = "Power", fill = "Null Hypotheses:", shape = "Null Hypotheses:") +
+    theme_bw() +
+    theme(legend.position = "right") +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list( shape = c(22,24,23), color = "black")), shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
+
+p_KS_L <- p_KS_L + labs(title = NULL)
+
+(p_CvM_combined <- (p_KS_W + p_KS_L + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                             legend.title = element_text(size = 20, face = "bold"),
+                                                                             legend.text = element_text(size = 20),
+                                                                             plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                             axis.title = element_text(size = 15, face = "bold"),
+                                                                             axis.text = element_text(size = 15))) +
+    plot_annotation(title = "Cramér-von Mises test", 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+
+ggsave(filename = "04_Output/Figures/Power_Cramér_von_Mises_Skewness_RandomCensoring.png", plot = p_CvM_combined, width = 2130*2, height = 1800, units = "px")
+
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Power comparison for random censored data by Skewness fo Tests = KS
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Weibull
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_W_logistic <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+df_KS <- df_W_logistic %>%
+  select(power, test, symmetry, cens) %>%
+  filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+  mutate(Distribution = "Logistic") %>%
+  
+  rbind(
+    df_W_log %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+      mutate(Distribution = "Lognormal")
+  ) %>%
+  
+  rbind(
+    df_W_wei %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+      mutate(Distribution = "Weibull")
+  ) %>%
+  mutate(symmetry = factor(symmetry,
+                           levels = c("Symmetric",
+                                      "Asymmetric",
+                                      "Extremly asymmetric")))
+
+(p_KS_W <- ggplot(df_KS, aes(x = factor(symmetry), y = power, shape = Distribution, fill = Distribution)) +
+    geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
+    ggtitle("Power of Kolmogorov-Smirnov test under different skewness levels",
+            subtitle = "X ~ Weibull") +
+    labs(x = "Skewness level", y = "Power", fill = "Null Hypotheses:", shape = "Null Hypotheses:") +
+    theme_bw() +
+    theme(legend.position = "right") +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list( shape = c(22,24,23), color = "black")), shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
+
+p_KS_W <- p_KS_W + labs(title = NULL)
+
+
+#----------------------------------------------------------------------------------------------------------------------------
+# X ~ Lognormal
+#----------------------------------------------------------------------------------------------------------------------------
+
+df_L_logistic <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+df_KS <- df_L_logistic %>%
+  select(power, test, symmetry, cens) %>%
+  filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+  mutate(Distribution = "Logistic") %>%
+  
+  rbind(
+    df_L_log %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+      mutate(Distribution = "Lognormal")
+  ) %>%
+  
+  rbind(
+    df_L_wei %>%
+      select(power, test, symmetry, cens) %>%
+      filter(test == "Kolmogorov-Smirnov" & cens != "0% Censura") %>%
+      mutate(Distribution = "Weibull")
+  ) %>%
+  mutate(symmetry = factor(symmetry,
+                           levels = c("Symmetric",
+                                      "Asymmetric",
+                                      "Extremly asymmetric")))
+
+(p_KS_L <- ggplot(df_KS, aes(x = factor(symmetry), y = power, shape = Distribution, fill = Distribution)) +
+    geom_jitter(size = 3, stroke = 0.5, height = 0, width = 0.1) +
+    scale_shape_manual(values = c(22,24,23)) +
+    scale_fill_manual(values = c("Logistic" = "#CAFF70", "Lognormal" = "#79CDCD", "Weibull" = "#FF6A6A")) +
+    ggtitle("Power of Kolmogorov-Smirnov test under different skewness levels",
+            subtitle = "X ~ Lognormal") +
+    labs(x = "Skewness level", y = "Power", fill = "Null Hypotheses:", shape = "Null Hypotheses:") +
+    theme_bw() +
+    theme(legend.position = "right") +
+    lims(y = c(-0.01,1.01)) +
+    guides(fill = guide_legend(override.aes = list( shape = c(22,24,23), color = "black")), shape = "none") +
+    geom_hline(yintercept = 0.1, colour = "darkblue", linetype = 2, linewidth = 0.9))
+
+p_KS_L <- p_KS_L + labs(title = NULL)
+
+(p_KS_combined <- (p_KS_W + p_KS_L + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                             legend.title = element_text(size = 20, face = "bold"),
+                                                                             legend.text = element_text(size = 20),
+                                                                             plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                                             axis.title = element_text(size = 15, face = "bold"),
+                                                                             axis.text = element_text(size = 15))) +
+    plot_annotation(title = "Kolmogorov-Smirnov test", 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+
+ggsave(filename = "04_Output/Figures/Power_Kolmogorov_Skewness_RandomCensoring.png", plot = p_KS_combined, width = 2130*2, height = 1800, units = "px")
+
+
+p_AD_combined <- wrap_elements(
+  full = p_AD_combined
+) + plot_annotation(title = "Anderson-Darling test", theme = theme(plot.title = element_text(size = 50, face = "bold", hjust = 0.5)))
+
+p_CvM_combined <- wrap_elements(
+  full = p_CvM_combined
+) + plot_annotation(title = "Cramér-von Mises test", theme = theme(plot.title = element_text(size = 50, face = "bold", hjust = 0.5)))
+
+p_KS_combined <- wrap_elements(
+  full = p_KS_combined
+) + plot_annotation(title = "Kolmogorov-Smirnov test", theme = theme(plot.title = element_text(size = 50, face = "bold", hjust = 0.5)))
+
+(p_final <- (p_AD_combined / p_CvM_combined / p_KS_combined + plot_layout(guides = "collect") & theme(legend.position = "bottom", 
+                                                                                                           legend.title = element_text(size = 30, face = "bold"),
+                                                                                                           legend.text = element_text(size = 30),
+                                                                                                           plot.title = element_text(size = 30, face = "italic", hjust = 0.5),
+                                                                                                           plot.subtitle = element_text(size = 30, face = "italic", hjust = 0.5),
+                                                                                                           axis.title = element_text(size = 15, face = "bold"),
+                                                                                                           axis.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
+                    theme =  theme(plot.title = element_text(size = 35, face = "bold", hjust = 0.5))))
+
+
+
+ggsave(filename = "04_Output/Figures/Power_Skewness_RandomCensoring.png", plot = p_final, width = 2130*2, height = 3*1800, units = "px")
+
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Diff against censoring level at random censoring
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(patchwork)
+library(dplyr)
+
+################################################################################
+# Weibull
+################################################################################
+
+df_W_logistic <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+df_W_logistic2 <- df_W_logistic %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    symmetry = factor(
+      symmetry,
+      levels = c("Symmetric", "Asymmetric", "Extremly asymmetric"),
+      labels = c("Sym", "Asym", "Ex. Asym")
+    ), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_W_log2 <- df_W_log %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    symmetry = factor(
+      symmetry,
+      levels = c("Symmetric", "Asymmetric", "Extremly asymmetric"),
+      labels = c("Sym", "Asym", "Ex. Asym")
+    ), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_W_wei2 <- df_W_wei %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    symmetry = factor(
+      symmetry,
+      levels = c("Symmetric", "Asymmetric", "Extremly asymmetric"),
+      labels = c("Sym", "Asym", "Ex. Asym")
+    ), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_plot <- rbind(df_W_logistic2, df_W_log2, df_W_wei2) %>%
+  filter(test != "KS No Bootstrap")
+
+
+(p_Diff_W <- ggplot(df_plot, aes(x = symmetry, y = Diff_tmax, color = cens)) +
+  geom_jitter(width = 0.15, size = 3, shape = 16) +
+  facet_wrap(~ cens) +
+  scale_color_manual(values = c("Complete Data" = "#CAFF70", "30% Censorship" = "#79CDCD", "60% Censorship" = "#FF6A6A")) +
+  theme_minimal() +
+  labs(x = "Skewness level", y = expression(Diff[t[max]]), color = "Censoring level",
+       title = expression(Diff[t[max]] ~ "vs Skewness under Random Censoring"),
+       subtitle = "X ~ Weibull") +
+  theme(axis.text.x = element_text(angle = 25, hjust = 1)) + ylim(c(-0.2,0.2)))
+
+p_Diff_W <- p_Diff_W + labs(title = NULL)
+
+
+################################################################################
+# Lognormal
+################################################################################
+
+df_L_logistic <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+
+df_L_logistic2 <- df_L_logistic %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    symmetry = factor(
+      symmetry,
+      levels = c("Symmetric", "Asymmetric", "Extremly asymmetric"),
+      labels = c("Sym", "Asym", "Ex. Asym")
+    ), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_L_log2 <- df_L_log %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    symmetry = factor(
+      symmetry,
+      levels = c("Symmetric", "Asymmetric", "Extremly asymmetric"),
+      labels = c("Sym", "Asym", "Ex. Asym")
+    ), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_L_wei2 <- df_L_wei %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    symmetry = factor(
+      symmetry,
+      levels = c("Symmetric", "Asymmetric", "Extremly asymmetric"),
+      labels = c("Sym", "Asym", "Ex. Asym")
+    ), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_plot <- rbind(df_L_logistic2, df_L_log2, df_L_wei2) %>%
+  filter(test != "KS No Bootstrap")
+
+
+(p_Diff_L <- ggplot(df_L_logistic2, aes(x = symmetry, y = Diff_tmax, color = cens)) +
+    geom_jitter(width = 0.15, size = 3, shape = 16) +
+    facet_wrap(~ cens) +
+    scale_color_manual(values = c("Complete Data" = "#CAFF70", "30% Censorship" = "#79CDCD", "60% Censorship" = "#FF6A6A")) +
+    theme_minimal() +
+    labs(x = "Skewness level", y = expression(Diff[t[max]]), color = "Censoring level",
+         title = expression(Diff[t[max]] ~ "vs Skewness under Random Censoring"),
+         subtitle = "X ~ Lognormal") +
+    theme(axis.text.x = element_text(angle = 25, hjust = 1)) + ylim(c(-0.2,0.2)))
+
+p_Diff_L <- p_Diff_L + labs(title = NULL)
+
+
+(p_Diff_combined <- (p_Diff_W + p_Diff_L + plot_layout(guides = "collect")&
+                       theme_minimal()  & theme(legend.position = "bottom",
+                                                legend.title = element_text(size = 20, face = "bold"),
+                                                legend.text = element_text(size = 20),
+                                                plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                axis.title = element_text(size = 20, face = "bold"),
+                                                axis.text = element_text(size = 15, angle = 35),
+                                                strip.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+
+ggsave(filename = "04_Output/Figures/Diff_Skewness_RandomCensoring.png", plot = p_Diff_combined, width = 2130*2, height = 1800, units = "px")
+
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Diff against sample size at random censoring
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(patchwork)
+library(dplyr)
+
+################################################################################
+# Weibull
+################################################################################
+
+df_W_logistic <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+df_W_logistic2 <- df_W_logistic %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_W_log2 <- df_W_log %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_W_wei2 <- df_W_wei %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_plot <- rbind(df_W_logistic2, df_W_log2, df_W_wei2) %>%
+  filter(test != "KS No Bootstrap")
+
+
+(p_Diff_W <- ggplot(df_plot, aes(x = n, y = Diff_tmax, color = cens)) +
+    geom_jitter(width = 0.15, size = 3, shape = 16) +
+    facet_wrap(~ cens) +
+    scale_color_manual(values = c("Complete Data" = "#CAFF70", "30% Censorship" = "#79CDCD", "60% Censorship" = "#FF6A6A")) +
+    theme_minimal() +
+    labs(x = "Sample Size", y = expression(Diff[t[max]]), color = "Censoring level",
+         title = expression(Diff[t[max]] ~ "vs Sample Size under Random Censoring"),
+         subtitle = "X ~ Weibull") +
+    theme(axis.text.x = element_text(angle = 25, hjust = 1)) + ylim(c(-0.2,0.2)))
+
+p_Diff_W <- p_Diff_W + labs(title = NULL)
+
+
+################################################################################
+# Lognormal
+################################################################################
+
+df_L_logistic <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+
+df_L_logistic2 <- df_L_logistic %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_L_log2 <- df_L_log %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_L_wei2 <- df_L_wei %>%
+  mutate(
+    Diff_tmax = SEC_min_median - km_min_median,
+    n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                     labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_plot <- rbind(df_L_logistic2, df_L_log2, df_L_wei2) %>%
+  filter(test != "KS No Bootstrap")
+
+
+(p_Diff_L <- ggplot(df_L_logistic2, aes(x = n, y = Diff_tmax, color = cens)) +
+    geom_jitter(width = 0.15, size = 3, shape = 16) +
+    facet_wrap(~ cens) +
+    scale_color_manual(values = c("Complete Data" = "#CAFF70", "30% Censorship" = "#79CDCD", "60% Censorship" = "#FF6A6A")) +
+    theme_minimal() +
+    labs(x = "Sample Size", y = expression(Diff[t[max]]), color = "Censoring level",
+         title = expression(Diff[t[max]] ~ "vs Sample Size under Random Censoring"),
+         subtitle = "X ~ Lognormal") +
+    theme(axis.text.x = element_text(angle = 25, hjust = 1)) + ylim(c(-0.2,0.2)))
+
+p_Diff_L <- p_Diff_L + labs(title = NULL)
+
+
+(p_Diff_combined <- (p_Diff_W + p_Diff_L + plot_layout(guides = "collect") &
+                       theme_minimal()  & theme(legend.position = "bottom",
+                                                legend.title = element_text(size = 20, face = "bold"),
+                                                legend.text = element_text(size = 20),
+                                                plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                                axis.title = element_text(size = 20, face = "bold"),
+                                                axis.text = element_text(size = 15, angle = 35),
+                                                strip.text = element_text(size = 15))) +
+    plot_annotation(title = NULL, 
+                    theme =  theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5))))
+
+
+ggsave(filename = "04_Output/Figures/Diff_Sample_Size_RandomCensoring.png", plot = p_Diff_combined, width = 2130*2, height = 1800, units = "px")
+
+
+
+################################################################################
+#-------------------------------------------------------------------------------
+# Diff vs power for each test at random censoring
+#-------------------------------------------------------------------------------
+################################################################################
+
+library(ggplot2)
+library(patchwork)
+library(dplyr)
+
+################################################################################
+# Weibull
+################################################################################
+
+df_W_logistic <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_logistic/Power/_Distribution_weibull_resultados_h0_logistic_all_.RData"))
+df_W_log <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_weibull_resultados_h0_lognormal_all_.RData"))
+df_W_wei <- get(load("02_Data/Weibull_RandomCensoring/df_power_all4_weibull/Power/_Distribution_weibull_resultados_h0_weibull_all_.RData"))
+
+df_W_logistic2 <- df_W_logistic %>%
+  mutate(Distribution = "Logistic",
+    Diff_tmax = SEC_min_median - km_min_median,
+    n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                                 labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_W_log2 <- df_W_log %>%
+  mutate(Distribution = "Lognormal",
+    Diff_tmax = SEC_min_median - km_min_median,
+    n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                                 labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_W_wei2 <- df_W_wei %>%
+  mutate(Distribution = "Weibull",
+    Diff_tmax = SEC_min_median - km_min_median,
+    n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                                 labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+################################################################################
+#AD
+
+df_plot <- rbind(df_W_logistic2, df_W_log2, df_W_wei2) %>%
+  filter(test == "Anderson-Darling")
+
+
+(p_AD <- ggplot(df_plot, aes(x = Diff_tmax, y = power, shape = Distribution, fill = cens)) +
+  geom_point(size = 3.5, color = "black", stroke = 0.7) +
+  geom_vline(xintercept = 0, color = "darkblue", linetype = "dashed", size = 1.2) +
+  geom_hline(yintercept = 0.1, color = "darkred", linetype = "dotted", size = 1) +
+  annotate("text", x = -0.15, y = 0.06, label = "alpha = 0.1", color = "darkred", size = 4.5, hjust = 0) +
+  scale_shape_manual(values = c("Logistic" = 22, "Lognormal" = 24, "Weibull" = 23)) +
+  scale_fill_manual(values = c("Complete Data" = "#bfff80", "30% Censorship" = "#7cd1d6", "60% Censorship" = "#ff796c")) +
+  labs(title = "Power of the Anderson-Darling test by Censoring and Null Hypothesis", subtitle = "Anderson-Darling test", 
+       y = "Power", x = expression(paste("Difference:  ", Mean(S[0](t[m]: hat(theta)) - hat(S)(t[m])))),
+       fill = "Censoring", shape = "Null Hypothesis") +
+  theme_bw() +
+  guides(fill = guide_legend(override.aes = list(shape = 21, color = "black")),
+         shape = guide_legend(override.aes = list(fill = "black"))) +
+  theme(
+    plot.title = element_text(size = 16, face = "plain", margin = margin(b = 5)),
+    plot.subtitle = element_text(size = 13, face = "plain", margin = margin(b = 15)),
+    axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+    axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+    axis.text = element_text(size = 10, color = "black"),
+    panel.grid.major = element_line(color = "#e6e6e6"),
+    panel.grid.minor = element_line(color = "#f2f2f2"),
+    legend.position = c(0.02, 0.98),
+    legend.justification = c("left", "top"),
+    legend.background = element_blank(),
+    legend.box.background = element_blank(),
+    legend.key = element_blank(),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)) + 
+  scale_y_continuous(breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), limits = c(-0.05, 1.05)) +
+  scale_x_continuous(breaks = c(-0.2, -0.1, 0.0, 0.1, 0.2), limits = c(-0.22, 0.22)))
+
+p_AD <- p_AD+ labs(title = NULL)
+
+
+################################################################################
+#CvM
+
+df_plot <- rbind(df_W_logistic2, df_W_log2, df_W_wei2) %>%
+  filter(test == "Cramér von Mises")
+
+
+(p_CvM <- ggplot(df_plot, aes(x = Diff_tmax, y = power, shape = Distribution, fill = cens)) +
+  geom_point(size = 3.5, color = "black", stroke = 0.7) +
+  geom_vline(xintercept = 0, color = "darkblue", linetype = "dashed", size = 1.2) +
+  geom_hline(yintercept = 0.1, color = "darkred", linetype = "dotted", size = 1) +
+  annotate("text", x = -0.15, y = 0.06, label = "alpha = 0.1", color = "darkred", size = 4.5, hjust = 0) +
+  scale_shape_manual(values = c("Logistic" = 22, "Lognormal" = 24, "Weibull" = 23)) +
+  scale_fill_manual(values = c("Complete Data" = "#bfff80", "30% Censorship" = "#7cd1d6", "60% Censorship" = "#ff796c")) +
+  labs(title = "Power of the Cramér-von Mises test by Censoring and Null Hypothesis", subtitle = "Cramér-von Mises test", 
+       y = "Power", x = expression(paste("Difference:  ", Mean(S[0](t[m]: hat(theta)) - hat(S)(t[m])))),
+       fill = "Censoring", shape = "Null Hypothesis") +
+  theme_bw() +
+  guides(fill = guide_legend(override.aes = list(shape = 21, color = "black")),
+         shape = guide_legend(override.aes = list(fill = "black"))) +
+  theme(
+    plot.title = element_text(size = 16, face = "plain", margin = margin(b = 5)),
+    plot.subtitle = element_text(size = 13, face = "plain", margin = margin(b = 15)),
+    axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+    axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+    axis.text = element_text(size = 10, color = "black"),
+    panel.grid.major = element_line(color = "#e6e6e6"),
+    panel.grid.minor = element_line(color = "#f2f2f2"),
+    legend.position = c(0.02, 0.98),
+    legend.justification = c("left", "top"),
+    legend.background = element_blank(),
+    legend.box.background = element_blank(),
+    legend.key = element_blank(),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)) + 
+  scale_y_continuous(breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), limits = c(-0.05, 1.05)) +
+  scale_x_continuous(breaks = c(-0.2, -0.1, 0.0, 0.1, 0.2), limits = c(-0.22, 0.22)))
+
+p_CvM <- p_CvM + labs(title = NULL)
+
+################################################################################
+# KS
+
+df_plot <- rbind(df_W_logistic2, df_W_log2, df_W_wei2) %>%
+  filter(test == "Kolmogorov-Smirnov")
+
+
+(p_KS <- ggplot(df_plot, aes(x = Diff_tmax, y = power, shape = Distribution, fill = cens)) +
+  geom_point(size = 3.5, color = "black", stroke = 0.7) +
+  geom_vline(xintercept = 0, color = "darkblue", linetype = "dashed", size = 1.2) +
+  geom_hline(yintercept = 0.1, color = "darkred", linetype = "dotted", size = 1) +
+  annotate("text", x = -0.15, y = 0.06, label = "alpha = 0.1", color = "darkred", size = 4.5, hjust = 0) +
+  scale_shape_manual(values = c("Logistic" = 22, "Lognormal" = 24, "Weibull" = 23)) +
+  scale_fill_manual(values = c("Complete Data" = "#bfff80", "30% Censorship" = "#7cd1d6", "60% Censorship" = "#ff796c")) +
+  labs(title = "Power of the Kolmogorov-Smirnov test by Censoring and Null Hypothesis", subtitle = "Kolmogorov-Smirnov test", 
+       y = "Power", x = expression(paste("Difference:  ", Mean(S[0](t[m]: hat(theta)) - hat(S)(t[m])))),
+       fill = "Censoring", shape = "Null Hypothesis") +
+  theme_bw() +
+  guides(fill = guide_legend(override.aes = list(shape = 21, color = "black")),
+         shape = guide_legend(override.aes = list(fill = "black"))) +
+  theme(
+    plot.title = element_text(size = 16, face = "plain", margin = margin(b = 5)),
+    plot.subtitle = element_text(size = 13, face = "plain", margin = margin(b = 15)),
+    axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+    axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+    axis.text = element_text(size = 10, color = "black"),
+    panel.grid.major = element_line(color = "#e6e6e6"),
+    panel.grid.minor = element_line(color = "#f2f2f2"),
+    legend.position = c(0.02, 0.98),
+    legend.justification = c("left", "top"),
+    legend.background = element_blank(),
+    legend.box.background = element_blank(),
+    legend.key = element_blank(),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)) + 
+  scale_y_continuous(breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), limits = c(-0.05, 1.05)) +
+  scale_x_continuous(breaks = c(-0.2, -0.1, 0.0, 0.1, 0.2), limits = c(-0.22, 0.22)))
+
+p_KS <- p_KS+ labs(title = NULL)
+
+
+(p_final <- (p_AD + p_CvM + p_KS + plot_layout(guides = "collect") &
+              theme_minimal()  & theme(legend.position = "bottom",
+                                       legend.title = element_text(size = 20, face = "bold"),
+                                       legend.text = element_text(size = 20),
+                                       plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                       axis.title = element_text(size = 20, face = "bold"),
+                                       axis.text = element_text(size = 15, angle = 35),
+                                       strip.text = element_text(size = 15))))
+
+ggsave(filename = "04_Output/Figures/Diff_Power_each_test_Weibull.png", plot = p_final, width = 2130*3, height = 1800, units = "px")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
