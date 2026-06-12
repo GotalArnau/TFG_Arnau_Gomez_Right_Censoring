@@ -1809,7 +1809,7 @@ df_plot <- rbind(df_W_logistic2, df_W_log2, df_W_wei2) %>%
 p_KS <- p_KS+ labs(title = NULL)
 
 
-(p_final <- (p_AD + p_CvM + p_KS + plot_layout(guides = "collect") &
+(p_final <- (p_AD + p_CvM + plot_layout(guides = "collect") &
               theme_minimal()  & theme(legend.position = "bottom",
                                        legend.title = element_text(size = 20, face = "bold"),
                                        legend.text = element_text(size = 20),
@@ -1818,9 +1818,182 @@ p_KS <- p_KS+ labs(title = NULL)
                                        axis.text = element_text(size = 15, angle = 35),
                                        strip.text = element_text(size = 15))))
 
-ggsave(filename = "04_Output/Figures/Diff_Power_each_test_Weibull.png", plot = p_final, width = 2130*3, height = 1800, units = "px")
+ggsave(filename = "04_Output/Figures/Diff_Power_each_test_Weibull_1.png", plot = p_final, width = 2500*2, height = 1800, units = "px")
+
+(p_final <- (p_KS + plot_layout(guides = "collect") &
+               theme_minimal()  & theme(legend.position = "right",
+                                        legend.title = element_text(size = 10, face = "bold"),
+                                        legend.text = element_text(size = 10),
+                                        plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                        axis.title = element_text(size = 20, face = "bold"),
+                                        axis.text = element_text(size = 15, angle = 35),
+                                        strip.text = element_text(size = 15))))
+
+ggsave(filename = "04_Output/Figures/Diff_Power_each_test_Weibull_2.png", plot = p_final, width = 2500, height = 1800, units = "px")
 
 
+
+################################################################################
+# Lognormal
+################################################################################
+
+df_L_logistic <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_logistic/Power/_Distribution_lognormal_resultados_h0_logistic_all_.RData"))
+df_L_log <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_lognormal/Power/_Distribution_lognormal_resultados_h0_lognormal_all_.RData"))
+df_L_wei <- get(load("02_Data/Lognormal_RandomCensoring/df_power_all4_weibull/Power/_Distribution_lognormal_resultados_h0_weibull_all_.RData"))
+
+df_L_logistic2 <- df_L_logistic %>%
+  mutate(Distribution = "Logistic",
+         Diff_tmax = SEC_min_median - km_min_median,
+         n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                                      labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_L_log2 <- df_L_log %>%
+  mutate(Distribution = "Lognormal",
+         Diff_tmax = SEC_min_median - km_min_median,
+         n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                                      labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+df_L_wei2 <- df_L_wei %>%
+  mutate(Distribution = "Weibull",
+         Diff_tmax = SEC_min_median - km_min_median,
+         n = factor(n), cens = factor(cens, levels = c("0% Censura", "30% Censura", "60% Censura"),
+                                      labels = c("Complete Data", "30% Censorship", "60% Censorship"))
+  )
+
+################################################################################
+#AD
+
+df_plot <- rbind(df_L_logistic2, df_L_log2, df_L_wei2) %>%
+  filter(test == "Anderson-Darling")
+
+
+(p_AD <- ggplot(df_plot, aes(x = Diff_tmax, y = power, shape = Distribution, fill = cens)) +
+    geom_point(size = 3.5, color = "black", stroke = 0.7) +
+    geom_vline(xintercept = 0, color = "darkblue", linetype = "dashed", size = 1.2) +
+    geom_hline(yintercept = 0.1, color = "darkred", linetype = "dotted", size = 1) +
+    annotate("text", x = -0.15, y = 0.06, label = "alpha = 0.1", color = "darkred", size = 4.5, hjust = 0) +
+    scale_shape_manual(values = c("Logistic" = 22, "Lognormal" = 24, "Weibull" = 23)) +
+    scale_fill_manual(values = c("Complete Data" = "#bfff80", "30% Censorship" = "#7cd1d6", "60% Censorship" = "#ff796c")) +
+    labs(title = "Power of the Anderson-Darling test by Censoring and Null Hypothesis", subtitle = "Anderson-Darling test", 
+         y = "Power", x = expression(paste("Difference:  ", Mean(S[0](t[m]: hat(theta)) - hat(S)(t[m])))),
+         fill = "Censoring", shape = "Null Hypothesis") +
+    theme_bw() +
+    guides(fill = guide_legend(override.aes = list(shape = 21, color = "black")),
+           shape = guide_legend(override.aes = list(fill = "black"))) +
+    theme(
+      plot.title = element_text(size = 16, face = "plain", margin = margin(b = 5)),
+      plot.subtitle = element_text(size = 13, face = "plain", margin = margin(b = 15)),
+      axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+      axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+      axis.text = element_text(size = 10, color = "black"),
+      panel.grid.major = element_line(color = "#e6e6e6"),
+      panel.grid.minor = element_line(color = "#f2f2f2"),
+      legend.position = c(0.02, 0.98),
+      legend.justification = c("left", "top"),
+      legend.background = element_blank(),
+      legend.box.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_text(size = 12),
+      legend.text = element_text(size = 10)) + 
+    scale_y_continuous(breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), limits = c(-0.05, 1.05)) +
+    scale_x_continuous(breaks = c(-0.2, -0.1, 0.0, 0.1, 0.2), limits = c(-0.22, 0.22)))
+
+p_AD <- p_AD+ labs(title = NULL)
+
+
+################################################################################
+#CvM
+
+df_plot <- rbind(df_L_logistic2, df_L_log2, df_L_wei2) %>%
+  filter(test == "Cramér von Mises")
+
+
+(p_CvM <- ggplot(df_plot, aes(x = Diff_tmax, y = power, shape = Distribution, fill = cens)) +
+    geom_point(size = 3.5, color = "black", stroke = 0.7) +
+    geom_vline(xintercept = 0, color = "darkblue", linetype = "dashed", size = 1.2) +
+    geom_hline(yintercept = 0.1, color = "darkred", linetype = "dotted", size = 1) +
+    annotate("text", x = -0.15, y = 0.06, label = "alpha = 0.1", color = "darkred", size = 4.5, hjust = 0) +
+    scale_shape_manual(values = c("Logistic" = 22, "Lognormal" = 24, "Weibull" = 23)) +
+    scale_fill_manual(values = c("Complete Data" = "#bfff80", "30% Censorship" = "#7cd1d6", "60% Censorship" = "#ff796c")) +
+    labs(title = "Power of the Cramér-von Mises test by Censoring and Null Hypothesis", subtitle = "Cramér-von Mises test", 
+         y = "Power", x = expression(paste("Difference:  ", Mean(S[0](t[m]: hat(theta)) - hat(S)(t[m])))),
+         fill = "Censoring", shape = "Null Hypothesis") +
+    theme_bw() +
+    guides(fill = guide_legend(override.aes = list(shape = 21, color = "black")),
+           shape = guide_legend(override.aes = list(fill = "black"))) +
+    theme(
+      plot.title = element_text(size = 16, face = "plain", margin = margin(b = 5)),
+      plot.subtitle = element_text(size = 13, face = "plain", margin = margin(b = 15)),
+      axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+      axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+      axis.text = element_text(size = 10, color = "black"),
+      panel.grid.major = element_line(color = "#e6e6e6"),
+      panel.grid.minor = element_line(color = "#f2f2f2"),
+      legend.position = c(0.02, 0.98),
+      legend.justification = c("left", "top"),
+      legend.background = element_blank(),
+      legend.box.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_text(size = 12),
+      legend.text = element_text(size = 10)) + 
+    scale_y_continuous(breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), limits = c(-0.05, 1.05)) +
+    scale_x_continuous(breaks = c(-0.2, -0.1, 0.0, 0.1, 0.2), limits = c(-0.22, 0.22)))
+
+p_CvM <- p_CvM + labs(title = NULL)
+
+################################################################################
+# KS
+
+df_plot <- rbind(df_L_logistic2, df_L_log2, df_L_wei2) %>%
+  filter(test == "Kolmogorov-Smirnov")
+
+
+(p_KS <- ggplot(df_plot, aes(x = Diff_tmax, y = power, shape = Distribution, fill = cens)) +
+    geom_point(size = 3.5, color = "black", stroke = 0.7) +
+    geom_vline(xintercept = 0, color = "darkblue", linetype = "dashed", size = 1.2) +
+    geom_hline(yintercept = 0.1, color = "darkred", linetype = "dotted", size = 1) +
+    annotate("text", x = -0.15, y = 0.06, label = "alpha = 0.1", color = "darkred", size = 4.5, hjust = 0) +
+    scale_shape_manual(values = c("Logistic" = 22, "Lognormal" = 24, "Weibull" = 23)) +
+    scale_fill_manual(values = c("Complete Data" = "#bfff80", "30% Censorship" = "#7cd1d6", "60% Censorship" = "#ff796c")) +
+    labs(title = "Power of the Kolmogorov-Smirnov test by Censoring and Null Hypothesis", subtitle = "Kolmogorov-Smirnov test", 
+         y = "Power", x = expression(paste("Difference:  ", Mean(S[0](t[m]: hat(theta)) - hat(S)(t[m])))),
+         fill = "Censoring", shape = "Null Hypothesis") +
+    theme_bw() +
+    guides(fill = guide_legend(override.aes = list(shape = 21, color = "black")),
+           shape = guide_legend(override.aes = list(fill = "black"))) +
+    theme(
+      plot.title = element_text(size = 16, face = "plain", margin = margin(b = 5)),
+      plot.subtitle = element_text(size = 13, face = "plain", margin = margin(b = 15)),
+      axis.title.x = element_text(size = 12, margin = margin(t = 10)),
+      axis.title.y = element_text(size = 12, margin = margin(r = 10)),
+      axis.text = element_text(size = 10, color = "black"),
+      panel.grid.major = element_line(color = "#e6e6e6"),
+      panel.grid.minor = element_line(color = "#f2f2f2"),
+      legend.position = c(0.02, 0.98),
+      legend.justification = c("left", "top"),
+      legend.background = element_blank(),
+      legend.box.background = element_blank(),
+      legend.key = element_blank(),
+      legend.title = element_text(size = 12),
+      legend.text = element_text(size = 10)) + 
+    scale_y_continuous(breaks = c(0.00, 0.25, 0.50, 0.75, 1.00), limits = c(-0.05, 1.05)) +
+    scale_x_continuous(breaks = c(-0.2, -0.1, 0.0, 0.1, 0.2), limits = c(-0.22, 0.22)))
+
+p_KS <- p_KS+ labs(title = NULL)
+
+
+(p_final <- ((p_AD + p_CvM) / p_KS + plot_layout(guides = "collect") &
+               theme_minimal()  & theme(legend.position = "right",
+                                        legend.title = element_text(size = 20, face = "bold"),
+                                        legend.text = element_text(size = 20),
+                                        plot.subtitle = element_text(size = 20, face = "italic", hjust = 0.5),
+                                        axis.title = element_text(size = 20, face = "bold"),
+                                        axis.text = element_text(size = 15, angle = 35),
+                                        strip.text = element_text(size = 15))))
+
+ggsave(filename = "04_Output/Figures/Diff_Power_each_test_Lognormal.png", plot = p_final, width = 2500*2.5, height = 1800*2, units = "px")
 
 
 
