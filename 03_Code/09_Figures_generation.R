@@ -5,6 +5,7 @@
 #-------------------------------------------------------------------------------
 ################################################################################
 
+setwd("C:/Users/arnau.gomez/Desktop/GofCensSimulatios-Study")
 
 ################################################################################
 #-------------------------------------------------------------------------------
@@ -83,7 +84,7 @@ points_df <- data.frame(
    theme_bw() + 
    annotate("text", x = t_max, y = S_km_tmax + 0.07, label = expression(hat(S)(t[m])), hjust = -0.2, color = "darkgreen", 
             size = 5) +
-   annotate("text", x = t_max, y = S0_tmax + 0.07, label = expression((S)[0](t[m], hat(theta))), hjust = -0.1, 
+   annotate("text", x = t_max, y = S0_tmax + 0.07, label = expression(S[0](t[m], hat(theta))), hjust = -0.1, 
             color = "darkgreen", size = 5) +
    annotate("text", x = 10, y = (S_km_tmax + S0_tmax) / 2, label = expression(Diff[t[max]]), hjust = -0.2,
             color = "orange", size = 5) +
@@ -95,7 +96,7 @@ points_df <- data.frame(
                      axis.text = element_text(size = 15),
                      plot.title = element_text(size = 25, face = "bold")))
 
-ggsave(filename = "04_Output/Figures/Figure01_KM_visualization.png", plot = p1, width = 2130, height = 1600, units = "px")
+ggsave(filename = "04_Output/Figures/Diff_visualization.png", plot = p1, width = 2130, height = 1600, units = "px")
 
 
 
